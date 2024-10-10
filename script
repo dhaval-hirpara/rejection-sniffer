@@ -1,0 +1,51 @@
+function filterRejectionEmails() {
+  // Define the search query to find rejection emails
+  var searchQuery = 'subject:("rejected" OR "unsuccessful" OR "not selected" OR "unfortunately OR "appreciate your interest" OR "thank you for your" OR "other candidates")';
+
+  // Get the threads that match the search query
+  var threads = GmailApp.search(searchQuery);
+
+  // Define the label to move rejection emails to
+  var labelName = "Job Rejections";
+  var label = GmailApp.getUserLabelByName(labelName);
+  
+  // Create the label if it doesn't exist
+  if (!label) {
+    label = GmailApp.createLabel(labelName);
+  }
+
+  // Process each thread
+  for (var i = 0; i < threads.length; i++) {
+    var thread = threads[i];
+    var labels = thread.getLabels();
+
+    // Check if the thread already has the label
+    var hasLabel = false;
+    for (var j = 0; j < labels.length; j++) {
+      if (labels[j].getName() === labelName) {
+        hasLabel = true;
+        break;
+      }
+    }
+
+    // If the thread doesn't have the label, add it and mark messages as read
+    if (!hasLabel) {
+      thread.addLabel(label);
+      var messages = thread.getMessages();
+      for (var k = 0; k < messages.length; k++) {
+        var message = messages[k];
+        message.markRead();
+      }
+    }
+  }
+
+  Logger.log("Processed " + threads.length + " threads.");
+}
+
+// Set up a trigger to run the function periodically
+function createTimeDrivenTrigger() {
+  ScriptApp.newTrigger('filterRejectionEmails')
+           .timeBased()
+           .everyHours(1)
+           .create();
+}
