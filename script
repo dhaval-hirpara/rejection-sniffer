@@ -1,48 +1,44 @@
 function filterRejectionEmails() {
-  // Define the search query to find rejection emails
-  var searchQuery = 'subject:("rejected" OR "unsuccessful" OR "not selected" OR "unfortunately OR "appreciate your interest" OR "thank you for your" OR "other candidates")';
+  // Search query to find job rejection emails based on common phrases
+  var rejectionQuery = 'subject:("rejected" OR "unsuccessful" OR "not selected" OR "unfortunately" OR "appreciate your interest" OR "thank you for your" OR "other candidates")';
 
-  // Get the threads that match the search query
-  var threads = GmailApp.search(searchQuery);
+  // Get email threads that match the search query
+  var rejectionThreads = GmailApp.search(rejectionQuery);
 
-  // Define the label to move rejection emails to
-  var labelName = "Job Rejections";
-  var label = GmailApp.getUserLabelByName(labelName);
+  // Label to move rejection emails to
+  var rejectionLabelName = "Job Rejections";
+  var rejectionLabel = GmailApp.getUserLabelByName(rejectionLabelName);
   
   // Create the label if it doesn't exist
-  if (!label) {
-    label = GmailApp.createLabel(labelName);
+  if (!rejectionLabel) {
+    rejectionLabel = GmailApp.createLabel(rejectionLabelName);
   }
 
   // Process each thread
-  for (var i = 0; i < threads.length; i++) {
-    var thread = threads[i];
-    var labels = thread.getLabels();
+  for (var i = 0; i < rejectionThreads.length; i++) {
+    var thread = rejectionThreads[i];
+    var threadLabels = thread.getLabels();
 
-    // Check if the thread already has the label
-    var hasLabel = false;
-    for (var j = 0; j < labels.length; j++) {
-      if (labels[j].getName() === labelName) {
-        hasLabel = true;
-        break;
-      }
-    }
+    // Check if the thread already has the rejection label
+    var alreadyLabeled = threadLabels.some(function(label) {
+      return label.getName() === rejectionLabelName;
+    });
 
     // If the thread doesn't have the label, add it and mark messages as read
-    if (!hasLabel) {
-      thread.addLabel(label);
+    if (!alreadyLabeled) {
+      thread.addLabel(rejectionLabel);
       var messages = thread.getMessages();
-      for (var k = 0; k < messages.length; k++) {
-        var message = messages[k];
+      for (var j = 0; j < messages.length; j++) {
+        var message = messages[j];
         message.markRead();
       }
     }
   }
 
-  Logger.log("Processed " + threads.length + " threads.");
+  Logger.log("Processed " + rejectionThreads.length + " rejection threads.");
 }
 
-// Set up a trigger to run the function periodically
+// Set up a time-driven trigger to run the function every hour
 function createTimeDrivenTrigger() {
   ScriptApp.newTrigger('filterRejectionEmails')
            .timeBased()
