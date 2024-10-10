@@ -1,4 +1,4 @@
-# Rejection Sniffer
+# Rejection Sniffer: A Script to Automatically Filter Job Rejection Emails
 
 A Google Apps Script to automatically filter job rejection emails in Gmail.
 
